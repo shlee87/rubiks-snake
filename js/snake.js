@@ -1,7 +1,7 @@
 const RAD2 = Math.SQRT2;
 const PI   = Math.PI;
-const NofTriangles = 24;
-const currentSequence = "00000000000000000000000";
+var NofTriangles = 24;
+var currentSequence = "00000000000000000000000";
 
 let scene = new THREE.Scene();
 
