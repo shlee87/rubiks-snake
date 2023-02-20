@@ -124,7 +124,7 @@ function updateAllWorlds() {
 
 // Initial position is a line (all angles are 0)
 let currentAngles = genAngles(currentSequence);
-let prevAngles = [0]*NofTriangles;
+let prevAngles = [0]*(NofTriangles-1);
 
 function redrawSnake() {
     let rotationPoint = new THREE.Vector3(3 * RAD2 / 4, RAD2 / 4, 0.5);
