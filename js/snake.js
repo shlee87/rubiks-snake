@@ -1,5 +1,7 @@
 const RAD2 = Math.SQRT2;
 const PI   = Math.PI;
+const NofTriangles = 24;
+const currentSequence = "00000000000000000000000";
 
 let scene = new THREE.Scene();
 
@@ -67,7 +69,7 @@ function buildBlocks(shape, material, offset) {
     scene.add(mesh);
     blocks.push(mesh);
 
-    for(let i = 1; i < 12; i++) {
+    for(let i = 1; i < NofTriangles/2 ; i++) {
         let newMesh = mesh.clone();
         newMesh.position.set(RAD2 * i + offset, 0, 0);
         scene.add(newMesh);
@@ -101,7 +103,7 @@ let reds = buildBlocks(shape, redMaterial, RAD2 / 2);
 // Converts a string into a json object containing angles
 function genAngles(s) {
     let angles = {};
-    for(let i = 1; i < 24; i++) {
+    for(let i = 1; i < NofTriangles; i++) {
         let angle = PI / 2 * parseInt(s[i-1]);
         if(angle > PI) {
             angle = angle - 2 * PI;
@@ -121,13 +123,13 @@ function updateAllWorlds() {
 }
 
 // Initial position is a line (all angles are 0)
-let currentAngles = genAngles("00000000000000000000000");
-let prevAngles = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+let currentAngles = genAngles(currentSequence);
+let prevAngles = [0]*NofTriangles;
 
 function redrawSnake() {
     let rotationPoint = new THREE.Vector3(3 * RAD2 / 4, RAD2 / 4, 0.5);
 
-    for(let triCount = 1; triCount < 24; triCount++) {
+    for(let triCount = 1; triCount < NofTriangles; triCount++) {
         // Without this, the world matrices don't get updated and the rotations are messed up
         updateAllWorlds();
         // If particular angle didn't change, don't rotate
@@ -161,7 +163,7 @@ function redrawSnake() {
         prevAngles[triCount] = currentAngles["angle" + triCount];
 
         function transformAfter(list, idx) {
-            for(; idx < 12; idx++) {
+            for(; idx < NofTriangles/2; idx++) {
                 let block = list[idx];
                 block.applyMatrix(invPivotMatrix);
                 block.position.sub(rotationPoint);
@@ -182,31 +184,7 @@ function getPresetJSON() {
         "closed": false,
         "remembered": {
             "Default": {
-                "0": genAngles("00000000000000000000000")
-            },
-            "Cat": {
-                "0": genAngles("02202201022022022000000")
-            },
-            "Three Peaks": {
-                "0": genAngles("10012321211233232123003")
-            },
-            "ZigZag": {
-                "0": genAngles("11111111111111111111111")
-            },
-            "Triangle": {
-                "0": genAngles("30000001300000013000000")
-            },
-            "Ball": {
-                "0": genAngles("13133131131331311313313")
-            },
-            "Cross": {
-                "0": genAngles("20220202202000220002022")
-            },
-            "Cobra": {
-                "0": genAngles("01013211231030000200002")
-            },
-            "Coronet": {
-                "0": genAngles("00110033001100330011003")
+                "0": genAngles(currentSequence)
             }
         },
         folders: {}
@@ -235,7 +213,7 @@ function getPresetJSON() {
     f1.open();
 
     let f2 = gui.addFolder("Angle Controls");
-    for(let i = 1; i < 24; i++) {
+    for(let i = 1; i < NofTriangles; i++) {
         f2.add(currentAngles, "angle" + i, -1 * PI, PI).step(PI/2).onChange(redrawSnake).listen();
     }
 })();
@@ -250,7 +228,7 @@ function clickToAnimate() {
     let animateGoal = Object.assign({}, currentAngles);
 
     // Reset to a straight line
-    for(let i = 1; i < 24; i++) {
+    for(let i = 1; i < NofTriangles; i++) {
         currentAngles["angle" + i] = 0;
     }
 
@@ -259,13 +237,13 @@ function clickToAnimate() {
 }
 
 function buildHelper(goal, count) {
-    while(currentAngles["angle" + count] == goal["angle" + count] && count <= 23) {
+    while(currentAngles["angle" + count] == goal["angle" + count] && count <= NofTriangles-1) {
         count++;
     }
     currentAngles["angle" + count] = goal["angle" + count];
 
     redrawSnake();
-    if(count < 23) {
+    if(count < NofTriangles-1) {
         setTimeout(buildHelper.bind(null, goal, count + 1), 500);
     } else {
         building = false;
